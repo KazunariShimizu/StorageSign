@@ -31,12 +31,10 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.ShapedRecipe;
@@ -62,7 +60,7 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 		//ShapedRecipe storageSignRecipe = new ShapedRecipe(StorageSign.emptySign());
 		storageSignRecipe.shape("CCC","CSC","CHC");
 		storageSignRecipe.setIngredient('C', Material.CHEST);
-		storageSignRecipe.setIngredient('S', Material.SIGN);
+		storageSignRecipe.setIngredient('S', Material.OAK_SIGN);
 		if (config.getBoolean("hardrecipe")) storageSignRecipe.setIngredient('H', Material.ENDER_CHEST);
 		else storageSignRecipe.setIngredient('H', Material.CHEST);
 		getServer().addRecipe(storageSignRecipe);
@@ -76,14 +74,14 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 
 	public boolean isStorageSign(ItemStack item) {
 		if (item == null) return false;
-		if (item.getType() != Material.SIGN) return false;
+		if (item.getType() != Material.OAK_SIGN) return false;
 		if (!item.getItemMeta().hasDisplayName()) return false;
 		if (!item.getItemMeta().getDisplayName().matches("StorageSign")) return false;
 		return item.getItemMeta().hasLore();
 	}
 
 	public boolean isStorageSign(Block block) {
-		if (block.getType() == Material.SIGN || block.getType() == Material.WALL_SIGN) {
+		if (block.getType() == Material.OAK_SIGN || block.getType() == Material.OAK_WALL_SIGN) {
 			Sign sign = (Sign) block.getState();
 			if (sign.getLine(0).matches("StorageSign")) return true;
 		}
@@ -284,8 +282,8 @@ public class StorageSignCore extends JavaPlugin implements Listener{
             int[] y = {1, 0, 0, 0, 0};
             int[] z = {0,-1, 1, 0, 0};
             block = event.getBlock().getRelative(x[i], y[i], z[i]);
-            if (i==0 && block.getType() == Material.SIGN && isStorageSign(block)) breakSignMap.put(block.getLocation(), new StorageSign((Sign)block.getState()));
-            else if(block.getType() == Material.WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) breakSignMap.put(block.getLocation(), new StorageSign((Sign)block.getState()));
+            if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) breakSignMap.put(block.getLocation(), new StorageSign((Sign)block.getState()));
+            else if(block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) breakSignMap.put(block.getLocation(), new StorageSign((Sign)block.getState()));
         }
         if (breakSignMap.isEmpty()) return;
         if (!event.getPlayer().hasPermission("storagesign.break")) {
@@ -320,6 +318,8 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 
     @EventHandler
     public void onItemMove(InventoryMoveItemEvent event) {
+    	if (event.getSource() == null || event.getSource().getViewers().size() == 0 || event.getSource().getViewers().get(0).getOpenInventory() == null) return;
+    	if(event.getItem() == null) return;
         if (event.isCancelled()) return;
         BlockState[] blockInventory =new BlockState[2];
         Boolean flag = false;
@@ -344,14 +344,14 @@ public class StorageSignCore extends JavaPlugin implements Listener{
                         int[] y = {1, 0, 0, 0, 0};
                         int[] z = {0,-1, 1, 0, 0};
                         Block block = blockInventory[j].getBlock().getRelative(x[i], y[i], z[i]);
-                        if (i==0 && block.getType() == Material.SIGN && isStorageSign(block)) {
+                        if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
                             sign = (Sign) block.getState();
                             storageSign = new StorageSign(sign);
                             if (storageSign.isSimilar(event.getItem())) {
                                 flag = true;
                                 break importLoop;
                             }
-                        } else if (i != 0 && block.getType() == Material.WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {
+                        } else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {
                             sign = (Sign) block.getState();
                             storageSign = new StorageSign(sign);
                             if (storageSign.isSimilar(event.getItem())) {
@@ -387,14 +387,14 @@ public class StorageSignCore extends JavaPlugin implements Listener{
                         int[] y = {1, 0, 0, 0, 0};
                         int[] z = {0,-1, 1, 0, 0};
                         Block block = blockInventory[j].getBlock().getRelative(x[i], y[i], z[i]);
-                        if (i==0 && block.getType() == Material.SIGN && isStorageSign(block)) {
+                        if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
                         	sign = (Sign) block.getState();
                         	storageSign = new StorageSign(sign);
                         	if (storageSign.isSimilar(event.getItem())) {
                         		flag = true;
                         		break exportLoop;
                         	}
-                        } else if (i != 0 && block.getType() == Material.WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {
+                        } else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {
                         	sign = (Sign) block.getState();
                         	storageSign = new StorageSign(sign);
                         	if (storageSign.isSimilar(event.getItem())) {
@@ -502,12 +502,15 @@ public class StorageSignCore extends JavaPlugin implements Listener{
         }
     }
 
-    @EventHandler
+    /*@EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryPickup(InventoryPickupItemEvent event) {//ホッパーに投げ込まれたとき
-        if (event.isCancelled() || !config.getBoolean("auto-import")) return;
+    	System.out.println("test");
+    	if (event.isCancelled() || !config.getBoolean("auto-import")) return;
 
         InventoryHolder holder = event.getInventory().getHolder();
+        System.out.println("test2");
         if (holder instanceof BlockState) {
+        	System.out.println("test3");
             Sign sign = null;
             StorageSign storageSign = null;
             boolean flag = false;
@@ -516,14 +519,14 @@ public class StorageSignCore extends JavaPlugin implements Listener{
                 int[] y = {1, 0, 0, 0, 0};
                 int[] z = {0,-1, 1, 0, 0};
                 Block block = ((BlockState)holder).getBlock().getRelative(x[i], y[i], z[i]);
-                if (i==0 && block.getType() == Material.SIGN && isStorageSign(block)) {
+                if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
                     sign = (Sign) block.getState();
                     storageSign = new StorageSign(sign);
                     if (storageSign.isSimilar(event.getItem().getItemStack())) {
                         flag = true;
                         break;
                     }
-                } else if (i != 0 && block.getType() == Material.WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {//BlockFaceに変更？(めんどい)
+                } else if ( i != 0 && block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {//BlockFaceに変更？(めんどい)
                     sign = (Sign) block.getState();
                     storageSign = new StorageSign(sign);
                     if (storageSign.isSimilar(event.getItem().getItemStack())) {
@@ -532,9 +535,10 @@ public class StorageSignCore extends JavaPlugin implements Listener{
                     }
                 }
             }
+            System.out.println("test4");
             if (flag) importSign(sign, storageSign, event.getItem().getItemStack(), event.getInventory());
         }
-    }
+    }*/
 
     @EventHandler
     public void onPlayerPickupItem(EntityPickupItemEvent event) {

@@ -14,8 +14,6 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.NumberConversions;
 
-import wacky.storagesign.PotionInfo;
-
 public class StorageSign {
 
     protected Material mat;
@@ -128,7 +126,7 @@ public class StorageSign {
     }
 
     public ItemStack getStorageSign() {
-        ItemStack item = new ItemStack(Material.SIGN, stack);
+        ItemStack item = new ItemStack(Material.OAK_SIGN, stack);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("StorageSign");
         List<String> list = new ArrayList<>();
@@ -150,7 +148,7 @@ public class StorageSign {
     }
 
     public static ItemStack emptySign() {
-        ItemStack emptySign = new ItemStack(Material.SIGN);
+        ItemStack emptySign = new ItemStack(Material.OAK_SIGN);
         ItemMeta meta = emptySign.getItemMeta();
         List<String> list = new ArrayList<>();
         meta.setDisplayName("StorageSign");
