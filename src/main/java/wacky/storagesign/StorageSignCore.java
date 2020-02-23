@@ -31,13 +31,10 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -502,43 +499,39 @@ public class StorageSignCore extends JavaPlugin implements Listener{
         }
     }
 
-    /*@EventHandler(priority = EventPriority.LOWEST)
-    public void onInventoryPickup(InventoryPickupItemEvent event) {//ホッパーに投げ込まれたとき
-    	System.out.println("test");
-    	if (event.isCancelled() || !config.getBoolean("auto-import")) return;
+	@EventHandler
+	public void onInventoryPickup(InventoryPickupItemEvent event) {//ホッパーに投げ込まれたとき
+		if (event.isCancelled() || !config.getBoolean("auto-import")) return;
 
-        InventoryHolder holder = event.getInventory().getHolder();
-        System.out.println("test2");
-        if (holder instanceof BlockState) {
-        	System.out.println("test3");
-            Sign sign = null;
-            StorageSign storageSign = null;
-            boolean flag = false;
-            for (int i=0; i<5; i++) {
-                int[] x = {0, 0, 0,-1, 1};
-                int[] y = {1, 0, 0, 0, 0};
-                int[] z = {0,-1, 1, 0, 0};
-                Block block = ((BlockState)holder).getBlock().getRelative(x[i], y[i], z[i]);
-                if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
-                    sign = (Sign) block.getState();
-                    storageSign = new StorageSign(sign);
-                    if (storageSign.isSimilar(event.getItem().getItemStack())) {
-                        flag = true;
-                        break;
-                    }
-                } else if ( i != 0 && block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {//BlockFaceに変更？(めんどい)
-                    sign = (Sign) block.getState();
-                    storageSign = new StorageSign(sign);
-                    if (storageSign.isSimilar(event.getItem().getItemStack())) {
-                        flag = true;
-                        break;
-                    }
-                }
-            }
-            System.out.println("test4");
-            if (flag) importSign(sign, storageSign, event.getItem().getItemStack(), event.getInventory());
-        }
-    }*/
+		InventoryHolder holder = event.getInventory().getHolder();
+		if (holder instanceof BlockState) {
+			Sign sign = null;
+			StorageSign storageSign = null;
+			boolean flag = false;
+			for (int i = 0; i < 5; i++) {
+				int[] x = {0, 0, 0, -1, 1};
+				int[] y = {1, 0, 0, 0, 0};
+				int[] z = {0, -1, 1, 0, 0};
+				Block block = ((BlockState) holder).getBlock().getRelative(x[i], y[i], z[i]);
+				if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
+					sign = (Sign) block.getState();
+					storageSign = new StorageSign(sign);
+					if (storageSign.isSimilar(event.getItem().getItemStack())) {
+						flag = true;
+						break;
+					}
+				} else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && isStorageSign(block)) {//BlockFaceに変更？(めんどい)
+					sign = (Sign) block.getState();
+					storageSign = new StorageSign(sign);
+					if (storageSign.isSimilar(event.getItem().getItemStack())) {
+						flag = true;
+						break;
+					}
+				}
+			}
+			if (flag) importSign(sign, storageSign, event.getItem().getItemStack(), event.getInventory());
+		}
+	}
 
     @EventHandler
     public void onPlayerPickupItem(EntityPickupItemEvent event) {
