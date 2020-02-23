@@ -322,6 +322,10 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 		if (event.isCancelled()) {
 			return;
 		}
+		if (event.getDestination().getHolder() instanceof Minecart ||
+				event.getDestination().getHolder() == null) {
+			return;
+		}
 
 		Sign sign = null;
 		StorageSign storageSign = null;
@@ -333,7 +337,7 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 				int[] y = {1, 0, 0, 0, 0};
 				int[] z = {0, -1, 1, 0, 0};
 				BlockState blockState = (BlockState) event.getDestination().getHolder();
-				assert blockState != null;
+				// assert blockState != null;
 				Block block = blockState.getBlock().getRelative(x[i], y[i], z[i]);
 				if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
 					sign = (Sign) block.getState();
@@ -366,7 +370,7 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 			int[] y = {1, 0, 0, 0, 0};
 			int[] z = {0, -1, 1, 0, 0};
 			BlockState blockState = (BlockState) event.getDestination().getHolder();
-			assert blockState != null;
+			// assert blockState != null;
 			Block block = blockState.getBlock().getRelative(x[i], y[i], z[i]);
 			if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
 				sign = (Sign) block.getState();
