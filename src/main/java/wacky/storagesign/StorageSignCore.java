@@ -313,97 +313,80 @@ public class StorageSignCore extends JavaPlugin implements Listener{
         event.getPlayer().closeInventory();
     }
 
-    @EventHandler
-    public void onItemMove(InventoryMoveItemEvent event) {
-    	if (event.getSource() == null || event.getSource().getViewers().size() == 0 || event.getSource().getViewers().get(0).getOpenInventory() == null) return;
-    	if(event.getItem() == null) return;
-        if (event.isCancelled()) return;
-        BlockState[] blockInventory =new BlockState[2];
-        Boolean flag = false;
-        Sign sign = null;
-        StorageSign storageSign = null;
+	/**
+	 * チェストやホッパー等からアイテムが流れる際に発火
+	 * @param event InventoryMoveItemEvent
+	 */
+	@EventHandler
+	public void onItemMove(InventoryMoveItemEvent event) {
+		if (event.isCancelled()) {
+			return;
+		}
 
-        if (config.getBoolean("auto-import")) {
-            if (event.getDestination().getHolder() instanceof Minecart);//何もしない
-            else if (event.getDestination().getHolder() instanceof DoubleChest) {
-                DoubleChest lc = (DoubleChest)event.getDestination().getHolder();
-                blockInventory[0] = (BlockState) lc.getLeftSide();
-                blockInventory[1] = (BlockState) lc.getRightSide();
-            } else {
-                blockInventory[0] = (BlockState) event.getDestination().getHolder();
-            }
+		Sign sign = null;
+		StorageSign storageSign = null;
+		if (config.getBoolean("auto-import")) {
+			boolean canImport = false;
 
-            importLoop:
-                for (int j=0; j<2; j++) {
-                    if (blockInventory[j] == null) break;
-                    for (int i=0; i<5; i++) {
-                        int[] x = {0, 0, 0,-1, 1};
-                        int[] y = {1, 0, 0, 0, 0};
-                        int[] z = {0,-1, 1, 0, 0};
-                        Block block = blockInventory[j].getBlock().getRelative(x[i], y[i], z[i]);
-                        if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
-                            sign = (Sign) block.getState();
-                            storageSign = new StorageSign(sign);
-                            if (storageSign.isSimilar(event.getItem())) {
-                                flag = true;
-                                break importLoop;
-                            }
-                        } else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {
-                            sign = (Sign) block.getState();
-                            storageSign = new StorageSign(sign);
-                            if (storageSign.isSimilar(event.getItem())) {
-                                flag = true;
-                                break importLoop;
-                            }
-                        }
-                    }
-                }
-            //搬入先が見つかった(搬入するとは言ってない)
-            if (flag) importSign(sign, storageSign, event.getItem(), event.getDestination());
-        }
+			for (int i = 0; i < 5; i++) {
+				int[] x = {0, 0, 0, -1, 1};
+				int[] y = {1, 0, 0, 0, 0};
+				int[] z = {0, -1, 1, 0, 0};
+				BlockState blockState = (BlockState) event.getDestination().getHolder();
+				assert blockState != null;
+				Block block = blockState.getBlock().getRelative(x[i], y[i], z[i]);
+				if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
+					sign = (Sign) block.getState();
+					storageSign = new StorageSign(sign);
+					if (storageSign.isSimilar(event.getItem())) {
+						canImport = true;
+					}
+				} else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && isStorageSign(block)) {
+					sign = (Sign) block.getState();
+					storageSign = new StorageSign(sign);
+					if (storageSign.isSimilar(event.getItem())) {
+						canImport = true;
+						break;
+					}
+				}
+			}
+			//搬入先が見つかった(搬入するとは言ってない)
+			if (canImport) {
+				importSign(sign, storageSign, event.getItem(), event.getDestination());
+			}
+		}
 
-        //搬出用にリセット
-        if (config.getBoolean("auto-export")) {
-            blockInventory[0] = null;
-            blockInventory[1] = null;
-            flag = false;
-            if (event.getSource().getHolder() instanceof Minecart);
-            else if (event.getSource().getHolder() instanceof DoubleChest) {
-                DoubleChest lc = (DoubleChest)event.getSource().getHolder();
-                blockInventory[0] = (BlockState) lc.getLeftSide();
-                blockInventory[1] = (BlockState) lc.getRightSide();
-            } else {
-                blockInventory[0] = (BlockState) event.getSource().getHolder();
-            }
-
-            exportLoop:
-                for (int j=0; j<2; j++) {
-                    if (blockInventory[j] == null) break;
-                    for (int i=0; i<5; i++) {
-                        int[] x = {0, 0, 0,-1, 1};
-                        int[] y = {1, 0, 0, 0, 0};
-                        int[] z = {0,-1, 1, 0, 0};
-                        Block block = blockInventory[j].getBlock().getRelative(x[i], y[i], z[i]);
-                        if (i==0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
-                        	sign = (Sign) block.getState();
-                        	storageSign = new StorageSign(sign);
-                        	if (storageSign.isSimilar(event.getItem())) {
-                        		flag = true;
-                        		break exportLoop;
-                        	}
-                        } else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && block.getData() == i+1 && isStorageSign(block)) {
-                        	sign = (Sign) block.getState();
-                        	storageSign = new StorageSign(sign);
-                        	if (storageSign.isSimilar(event.getItem())) {
-                        		flag = true;
-                        		break exportLoop;
-                        	}
-                        }
-                    }
-                }
-            if (flag) exportSign(sign, storageSign, event.getItem(), event.getSource(), event.getDestination());
-        }
-    }
+		//搬出用にリセット
+		if (!config.getBoolean("auto-export")) {
+			return;
+		}
+		boolean canExport = false;
+		for (int i = 0; i < 5; i++) {
+			int[] x = {0, 0, 0, -1, 1};
+			int[] y = {1, 0, 0, 0, 0};
+			int[] z = {0, -1, 1, 0, 0};
+			BlockState blockState = (BlockState) event.getDestination().getHolder();
+			assert blockState != null;
+			Block block = blockState.getBlock().getRelative(x[i], y[i], z[i]);
+			if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
+				sign = (Sign) block.getState();
+				storageSign = new StorageSign(sign);
+				if (storageSign.isSimilar(event.getItem())) {
+					canExport = true;
+				}
+			} else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && isStorageSign(block)) {
+				sign = (Sign) block.getState();
+				storageSign = new StorageSign(sign);
+				if (storageSign.isSimilar(event.getItem())) {
+					canExport = true;
+					break;
+				}
+			}
+		}
+		if (canExport) {
+			exportSign(sign, storageSign, event.getItem(), event.getSource(), event.getDestination());
+		}
+	}
 
 	private void importSign(Sign sign, StorageSign storageSign, ItemStack item, Inventory inv) {
         //搬入　条件　1スタック以上アイテムが入っている
