@@ -4,7 +4,7 @@ no-permisson: You don't have permission
 manual-import: true
 manual-export: true
 auto-import: true
-auto-export: true
+auto-export: false
 autocollect: true
 hardrecipe: false
 
