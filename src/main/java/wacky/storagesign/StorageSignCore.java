@@ -323,7 +323,8 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 			return;
 		}
 		if (event.getDestination().getHolder() instanceof Minecart ||
-				event.getDestination().getHolder() == null) {
+				event.getDestination().getHolder() == null ||
+				event.getDestination().getHolder() instanceof DoubleChest) {
 			return;
 		}
 
