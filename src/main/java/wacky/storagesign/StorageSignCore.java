@@ -337,22 +337,28 @@ public class StorageSignCore extends JavaPlugin implements Listener{
 				int[] x = {0, 0, 0, -1, 1};
 				int[] y = {1, 0, 0, 0, 0};
 				int[] z = {0, -1, 1, 0, 0};
-				BlockState blockState = (BlockState) event.getDestination().getHolder();
-				// assert blockState != null;
-				Block block = blockState.getBlock().getRelative(x[i], y[i], z[i]);
-				if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
-					sign = (Sign) block.getState();
-					storageSign = new StorageSign(sign);
-					if (storageSign.isSimilar(event.getItem())) {
-						canImport = true;
+				try {
+					BlockState blockState = (BlockState) event.getDestination().getHolder();
+					Block block = blockState.getBlock().getRelative(x[i], y[i], z[i]);
+					if (i == 0 && block.getType() == Material.OAK_SIGN && isStorageSign(block)) {
+						sign = (Sign) block.getState();
+						storageSign = new StorageSign(sign);
+						if (storageSign.isSimilar(event.getItem())) {
+							canImport = true;
+						}
+					} else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && isStorageSign(block)) {
+						sign = (Sign) block.getState();
+						storageSign = new StorageSign(sign);
+						if (storageSign.isSimilar(event.getItem())) {
+							canImport = true;
+							break;
+						}
 					}
-				} else if (i != 0 && block.getType() == Material.OAK_WALL_SIGN && isStorageSign(block)) {
-					sign = (Sign) block.getState();
-					storageSign = new StorageSign(sign);
-					if (storageSign.isSimilar(event.getItem())) {
-						canImport = true;
-						break;
-					}
+				} catch (ClassCastException e) {
+					// org.bukkit.craftbukkit.v1_15_R1.inventory.CraftBlockInventoryHolder@3051d35d
+					// をBlockStateやCastする際にエラーが発生している模様。
+					// Bad practiceだがCraftBukkit側のAPIのようなので例外を握りつぶす。
+					return;
 				}
 			}
 			//搬入先が見つかった(搬入するとは言ってない)
